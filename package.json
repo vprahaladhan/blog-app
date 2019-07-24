@@ -1,0 +1,28 @@
+{
+  "name": "blog-app",
+  "version": "1.0.0",
+  "description": "blog application for part 4",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "watch": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vprahaladhan/blog-app.git"
+  },
+  "author": "Prahal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vprahaladhan/blog-app/issues"
+  },
+  "homepage": "https://github.com/vprahaladhan/blog-app#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.0.0",
+    "express": "^4.17.1",
+    "mongoose": "^5.6.6",
+    "nodemon": "^1.19.1"
+  }
+}
