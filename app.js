@@ -6,7 +6,7 @@ const mongoose = require('mongoose')
 const config = require('./utils/config')
 const blogsRouter = require('./controllers/blogs')
 const middleware = require('./utils/middleware')
-
+const sample = () => console.log('Sample function!')
 mongoose.connect(config.MONGODB_URI, { useNewUrlParser: true })
         .then(result => console.log('Connected to MongoDB'))
         .catch(error => console.log(error))
