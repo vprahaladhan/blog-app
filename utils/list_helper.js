@@ -104,6 +104,39 @@ const mostBlogs = blogs => {
     }
 }
 
+const mostLikes = blogs => {
+    let totalLikesByAuthor = []
+
+    blogs.forEach(blog => {
+        if (!(totalLikesByAuthor.map(blog => blog.author).includes(blog.author))) {
+            totalLikesByAuthor.push({
+                author: blog.author,
+                likes: blog.likes
+            })
+        }
+        else {
+            let authorsBlog = totalLikesByAuthor.find(current => current.author == blog.author)
+            authorsBlog.likes += blog.likes
+        }
+    })
+    
+    const emptyLikesByAuthor = {
+        author: '',
+        likes: 0
+    }
+
+    const mostLikesByAuthor = totalLikesByAuthor.reduce((total, allLikesByAuthor) => {
+        return allLikesByAuthor.likes > total.likes ? allLikesByAuthor : total
+    }, emptyLikesByAuthor)
+    
+    return {
+        author: mostLikesByAuthor.author,
+        likes: mostLikesByAuthor.likes
+    }
+}
+
+console.log(mostLikes(blogs))
+
 module.exports = {
-    dummy, totalLikes, favoriteBlog, mostBlogs
+    dummy, totalLikes, favoriteBlog, mostBlogs, mostLikes
 }
