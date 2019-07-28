@@ -25,14 +25,15 @@ blogsRouter.post('/', async (request, response, next) => {
         response.status(201).json(newBlog)
     }
     catch(error) {
-        // response.status(400).send()
-        next(error)
+        response.status(400).send()
+        // next(error)
     }
 })
 
 blogsRouter.get('/:id', async (request, response, next) => {
     try {
         const blog = await Blog.findById(request.params.id)
+        console.log(blog)
         blog ? response.json(blog) : response.status(404).end()
     }
     catch(error) {
@@ -50,7 +51,7 @@ blogsRouter.delete('/:id', async (request, response, next) => {
     }
 })
 
-blogsRouter.put(':/id', async (request, response, next) => {
+blogsRouter.put('/:id', async (request, response, next) => {
     const blog = request.body
 
     try {

@@ -113,6 +113,22 @@ test('a blog can be deleted', async () => {
     expect(titles).not.toContain(blogToDelete.title)
 })
 
+test('a blog can be updated', async () => {
+    const blogsAtStart = await testHelper.notesInDB()
+    const blogToUpdate = blogsAtStart[0]
+    const likesBeforeUpdate = blogToUpdate.likes
+    blogToUpdate.likes = likesBeforeUpdate + 1000
+  
+    await api
+      .put(`/api/blogs/${blogToUpdate.id}`)
+      .send(blogToUpdate)
+      .expect(200)
+  
+    const blogsAtEnd = await testHelper.notesInDB()
+
+    expect(blogsAtEnd[0].likes).toBeGreaterThan(likesBeforeUpdate)
+})
+
 test('unique identifier property of blogs is named id', async () => {
     const blogs = (await api.get('/api/blogs')).body
     blogs.forEach(blog => expect(blog.id).toBeDefined())
