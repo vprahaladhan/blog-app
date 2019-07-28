@@ -112,6 +112,11 @@ test('a blog can be deleted', async () => {
   
     expect(titles).not.toContain(blogToDelete.title)
 })
+
+test('unique identifier property of blogs is named id', async () => {
+    const blogs = (await api.get('/api/blogs')).body
+    blogs.forEach(blog => expect(blog.id).toBeDefined())
+})
   
 afterAll(() => {
     mongoose.connection.close()
