@@ -117,6 +117,22 @@ test('unique identifier property of blogs is named id', async () => {
     const blogs = (await api.get('/api/blogs')).body
     blogs.forEach(blog => expect(blog.id).toBeDefined())
 })
+
+test('likes defaults to 0 when not set in request body', async () => {
+    const blogWithNoLikes = Blog({
+        title: 'Travel',
+        author: 'WanderingSoul',
+        url: 'http://www.wanderlust.com'
+    })
+    await api
+            .post('/api/blogs')
+            .send(blogWithNoLikes)
+            .expect(201)
+
+    const blogs = await testHelper.notesInDB()
+    const savedBlog = blogs.find(blog => blog.title == blogWithNoLikes.title)
+    expect(savedBlog.likes).toBe(0)
+})
   
 afterAll(() => {
     mongoose.connection.close()
