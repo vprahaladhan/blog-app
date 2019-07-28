@@ -133,6 +133,16 @@ test('likes defaults to 0 when not set in request body', async () => {
     const savedBlog = blogs.find(blog => blog.title == blogWithNoLikes.title)
     expect(savedBlog.likes).toBe(0)
 })
+
+test('status 400 response when title & author not set in request body', async () => {
+    const blogWithoutTitleOrAuthor = Blog({
+        url: 'http://www.wanderlust.com'
+    })
+    await api
+            .post('/api/blogs')
+            .send(blogWithoutTitleOrAuthor)
+            .expect(400)
+})
   
 afterAll(() => {
     mongoose.connection.close()
