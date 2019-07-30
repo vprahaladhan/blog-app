@@ -3,6 +3,7 @@ const supertest = require('supertest')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blog')
+const User = require('../models/user')
 const testHelper = require('./test_helper')
 
 const initialBlogs = testHelper.initialBlogs
@@ -158,6 +159,61 @@ test('status 400 response when title & author not set in request body', async ()
             .post('/api/blogs')
             .send(blogWithoutTitleOrAuthor)
             .expect(400)
+})
+
+describe('when there is initially one user at db', () => {
+    beforeEach(async () => {
+        await User.deleteMany({})
+        const user = new User({ 
+            username: 'root', 
+            name: 'Sample', 
+            password: 'sekret' 
+        })
+        await user.save()
+    })
+  
+    test('creation succeeds with a fresh username', async () => {
+        const usersAtStart = await testHelper.usersInDB()
+  
+        const newUser = {
+            username: 'mluukkai',
+            password: 'salainen',
+            name: "Lukkainen"
+        }
+        
+        await api
+            .post('/api/users')
+            .send(newUser)
+            .expect(201)
+            .expect('Content-Type', /application\/json/)
+  
+        const usersAtEnd = await testHelper.usersInDB()
+        expect(usersAtEnd.length).toBe(usersAtStart.length + 1)
+  
+        const usernames = usersAtEnd.map(user => user.username)
+        expect(usernames).toContain(newUser.username)
+    })
+
+    test('creation fails with proper statuscode and message if username already taken', async () => {
+        const usersAtStart = await testHelper.usersInDB()
+    
+        const newUser = {
+            username: 'root',
+            name: 'Superuser',
+            password: 'salainen',
+        }
+    
+        const result = await api
+                            .post('/api/users')
+                            .send(newUser)
+                            .expect(400)
+                            .expect('Content-Type', /application\/json/)
+    
+        expect(result.body.error).toContain('"username" to be unique')
+    
+        const usersAtEnd = await testHelper.usersInDB()
+        expect(usersAtEnd.length).toBe(usersAtStart.length)
+    })
 })
   
 afterAll(() => {
