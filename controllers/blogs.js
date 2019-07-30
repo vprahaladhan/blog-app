@@ -41,6 +41,7 @@ blogsRouter.post('/', async (request, response, next) => {
         response.status(201).json(newBlog)
     }
     catch(error) {
+        error.name = "`title` not unique!"
         next(error)
     }
 })

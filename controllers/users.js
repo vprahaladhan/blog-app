@@ -15,12 +15,14 @@ usersRouter.get('/', async (request, response, next) => {
   
 usersRouter.post('/', async (request, response, next) => {
     const saltRounds = 10
-    const password = request.body.password.length < 3 ? 
-        request.body.password : await bcrypt.hash(request.body.password, saltRounds)
+    const body = request.body
+    body.password = body.hasOwnProperty('password') ? body.password : ''
+    const password = body.password.length < 3 ? 
+        body.password : await bcrypt.hash(body.password, saltRounds)
 
     const user = new User({
-        username: request.body.username,
-        name: request.body.name,
+        username: body.username,
+        name: body.name,
         password
     })
 
@@ -29,6 +31,7 @@ usersRouter.post('/', async (request, response, next) => {
         response.status(201).json(newuser)
     }
     catch(error) {
+        error.errmsg = '`username` not unique!'
         next(error)
     }
 })

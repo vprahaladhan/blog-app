@@ -20,9 +20,9 @@ const errorHandler = (error, request, response, next) => {
     } else if (error.name === "JsonWebTokenError") {
       return response.status(401).json({ error: 'token missing or invalid' })
     } else if (error.message.includes('duplicate key')) {
-      return response.status(400).json({ error: 'duplicate key' })
+      return response.status(400).json({ error: error.errmsg })
     }
-    logger.error(error.message)
+    logger.error(error.name, error.message)
     next(error)
 }
   
