@@ -14,34 +14,24 @@ blogsRouter.get('/', async (request, response, next) => {
     }
 })
 
-const getTokenFrom = request => {
-    const authorization = request.get('authorization')
-    if (authorization && authorization.toLowerCase().startsWith('bearer ')) {
-        return authorization.substring(7)
-    }
-    return null
-}
-  
 blogsRouter.post('/', async (request, response, next) => {
-    const user = await User.findById(request.body.userId)
-    const token = getTokenFrom(request)
-    const blog = new Blog({
-        title: request.body.title,
-        author: request.body.author,
-        url: request.body.url,
-        likes: request.body.likes,
-        user: user._id
-    })
-    
     try {
-        const decodedToken = await jwt.verify(token, process.env.SECRET)
+        const decodedToken = await jwt.verify(request.token, process.env.SECRET)
+        const blog = new Blog({
+            title: request.body.title,
+            author: request.body.author,
+            url: request.body.url,
+            likes: request.body.likes,
+            user: decodedToken.id
+        })
         const newBlog = await blog.save()
+        const user = await User.findById(decodedToken.id) 
         user.blogs = user.blogs.concat(newBlog._id)
         await user.save()
         response.status(201).json(newBlog)
     }
     catch(error) {
-        error.name = "`title` not unique!"
+        error.errmsg = "`title` not unique!"
         next(error)
     }
 })
@@ -59,8 +49,20 @@ blogsRouter.get('/:id', async (request, response, next) => {
 
 blogsRouter.delete('/:id', async (request, response, next) => {
     try {
-        await Blog.findByIdAndDelete(request.params.id)
-        response.status(204).end()
+        const decodedToken = await jwt.verify(request.token, process.env.SECRET)
+        console.log(`Decoded token: ${decodedToken.username}`)
+        const blog = await Blog.findById(request.params.id)
+        if (blog) {
+            const user = await User.findById(blog.user)
+            if (decodedToken.id.toString() === user.id.toString()) {
+                await user.blogs.splice(user.blogs.indexOf(blog.id), 1)
+                await user.save()
+                await blog.delete()
+                response.status(204).end()
+            }
+            else response.status(401).json({error: "Invalid token!"}).send() 
+        }
+        else response.status(400).json({error: "Invalid blog id"}).send()
     }
     catch(error) {
         next(error)

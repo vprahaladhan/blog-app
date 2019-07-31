@@ -63,13 +63,13 @@ test('a new blog can be added', async () => {
             .send(blog)
             .expect(201)
 
-    const blogs = await testHelper.notesInDB()
+    const blogs = await testHelper.blogsInDB()
     const titles = blogs.map(blog => blog.title)
     expect(blogs.length).toBe(initialBlogs.length + 1)
     expect(titles).toContain('IT')
 })
 
-test("blog with empty title can't be addded", async () => {
+test("blog with empty title can't be added", async () => {
     const blog = Blog({
         author: "Prahal",
         url: "none",
@@ -80,12 +80,12 @@ test("blog with empty title can't be addded", async () => {
             .send(blog)
             .expect(400)
     
-    const blogs = await testHelper.notesInDB()
+    const blogs = await testHelper.blogsInDB()
     expect(blogs.length).toBe(1)
 })
 
 test('a specific blog can be viewed', async () => {
-    const blogsAtStart = await testHelper.notesInDB()
+    const blogsAtStart = await testHelper.blogsInDB()
   
     const blogToView = blogsAtStart[0]
   
@@ -98,14 +98,14 @@ test('a specific blog can be viewed', async () => {
 })
 
 test('a blog can be deleted', async () => {
-    const blogsAtStart = await testHelper.notesInDB()
+    const blogsAtStart = await testHelper.blogsInDB()
     const blogToDelete = blogsAtStart[0]
   
     await api
       .delete(`/api/blogs/${blogToDelete.id}`)
       .expect(204)
   
-    const blogsAtEnd = await testHelper.notesInDB()
+    const blogsAtEnd = await testHelper.blogsInDB()
   
     expect(blogsAtEnd.length).toBe(initialBlogs.length - 1)
   
@@ -115,7 +115,7 @@ test('a blog can be deleted', async () => {
 })
 
 test('a blog can be updated', async () => {
-    const blogsAtStart = await testHelper.notesInDB()
+    const blogsAtStart = await testHelper.blogsInDB()
     const blogToUpdate = blogsAtStart[0]
     const likesBeforeUpdate = blogToUpdate.likes
     blogToUpdate.likes = likesBeforeUpdate + 1000
@@ -125,7 +125,7 @@ test('a blog can be updated', async () => {
       .send(blogToUpdate)
       .expect(200)
   
-    const blogsAtEnd = await testHelper.notesInDB()
+    const blogsAtEnd = await testHelper.blogsInDB()
 
     expect(blogsAtEnd[0].likes).toBeGreaterThan(likesBeforeUpdate)
 })
@@ -146,7 +146,7 @@ test('likes defaults to 0 when not set in request body', async () => {
             .send(blogWithNoLikes)
             .expect(201)
 
-    const blogs = await testHelper.notesInDB()
+    const blogs = await testHelper.blogsInDB()
     const savedBlog = blogs.find(blog => blog.title == blogWithNoLikes.title)
     expect(savedBlog.likes).toBe(0)
 })
@@ -159,6 +159,24 @@ test('status 400 response when title & author not set in request body', async ()
             .post('/api/blogs')
             .send(blogWithoutTitleOrAuthor)
             .expect(400)
+})
+
+test('creation of blog fails if user not authenticated', async () => {
+    const blog = Blog({
+        title: 'IT',
+        author: 'Prahal',
+        url: 'http://www.notsouseful.com',
+        likes: 100000
+    })
+
+    await api
+            .post('/api/blogs')
+            .send(blog)
+            .expect(401)
+
+    const blogs = await testHelper.blogsInDB()
+    const titles = blogs.map(blog => blog.title)
+    expect(blogs.length).toBe(initialBlogs.length)
 })
 
 describe('when there is initially one user at db', () => {
