@@ -38,7 +38,7 @@ blogsRouter.post('/', async (request, response, next) => {
 
 blogsRouter.get('/:id', async (request, response, next) => {
     try {
-        const blog = await Blog.findById(request.params.id)
+        const blog = await Blog.findById(request.params.id).populate('user', {username: 1, name: 1})
         console.log(blog)
         blog ? response.json(blog) : response.status(404).end()
     }
@@ -49,6 +49,7 @@ blogsRouter.get('/:id', async (request, response, next) => {
 
 blogsRouter.delete('/:id', async (request, response, next) => {
     try {
+        console.log(`In delete blog of server...`)
         const decodedToken = await jwt.verify(request.token, process.env.SECRET)
         console.log(`Decoded token: ${decodedToken.username}`)
         const blog = await Blog.findById(request.params.id)
@@ -65,15 +66,17 @@ blogsRouter.delete('/:id', async (request, response, next) => {
         else response.status(400).json({error: "Invalid blog id"}).send()
     }
     catch(error) {
+        console.log(`Error in decoding token...${error}`)
         next(error)
     }
 })
 
 blogsRouter.put('/:id', async (request, response, next) => {
+    console.log("In server's put blog!")
     const blog = request.body
-
+    console.log("Blog: ", blog)
     try {
-        response.json((await Blog.findByIdAndUpdate(request.params.id, blog, {new: true})))
+        response.json(await Blog.findByIdAndUpdate(request.params.id, blog, {new: true}).populate('user', {username: 1, name: 1}))
     }
     catch(error) {
         next(error)
