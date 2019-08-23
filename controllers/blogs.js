@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 blogsRouter.get('/', async (request, response, next) => {
     try {
         const blogs = await Blog.find({}).populate('user', {username: 1, name: 1})
+        console.log('Blogs: ', blogs.map(blog => blog.toJSON()))
         response.json(blogs.map(blog => blog.toJSON()))
     }
     catch(error) {
@@ -16,6 +17,7 @@ blogsRouter.get('/', async (request, response, next) => {
 
 blogsRouter.post('/', async (request, response, next) => {
     try {
+        console.log('In add blog...', request.token)
         const decodedToken = await jwt.verify(request.token, process.env.SECRET)
         const blog = new Blog({
             title: request.body.title,
@@ -49,15 +51,16 @@ blogsRouter.get('/:id', async (request, response, next) => {
 
 blogsRouter.delete('/:id', async (request, response, next) => {
     try {
-        console.log(`In delete blog of server...`)
         const decodedToken = await jwt.verify(request.token, process.env.SECRET)
         console.log(`Decoded token: ${decodedToken.username}`)
         const blog = await Blog.findById(request.params.id)
         if (blog) {
             const user = await User.findById(blog.user)
             if (decodedToken.id.toString() === user.id.toString()) {
+                console.log(`Blogs of ${user.username}: ${user.blogs}`)
                 await user.blogs.splice(user.blogs.indexOf(blog.id), 1)
                 await user.save()
+                console.log(`Blogs of ${user.username}: ${user.blogs}`)
                 await blog.delete()
                 response.status(204).end()
             }
